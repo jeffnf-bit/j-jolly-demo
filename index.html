@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>J-Jolly</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f8fd;color:#102c50;font-family:Arial,sans-serif}
+.app{max-width:480px;min-height:100vh;margin:auto;background:white;padding:22px 18px 95px}
+header{font-size:29px;font-weight:800;color:#102c50;padding:12px 0 30px}
+header span{color:#26a5ea}
+h1{font-size:26px;margin:0 0 12px}
+h2{font-size:21px}
+p{color:#687d95;line-height:1.5}
+.card{background:white;border:1px solid #dce9f4;border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 4px 16px #163a6010}
+.hero{background:#e5f4ff;padding:25px;border-radius:20px}
+button{cursor:pointer;font-size:16px}
+.btn{border:0;border-radius:13px;background:#0874c7;color:white;padding:16px;font-weight:bold;width:100%;margin-top:12px}
+.back{border:0;background:none;color:#0874c7;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.tile{padding:25px 8px;border:1px solid #dce9f4;border-radius:17px;background:white;font-weight:bold;color:#102c50}
+.tile b{display:block;font-size:30px;margin-bottom:10px}
+input,select{width:100%;padding:14px;margin:10px 0 18px;border:1px solid #cddce9;border-radius:12px;font-size:16px}
+.price{font-weight:bold;color:#0874c7;font-size:20px}
+small{color:#687d95}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);max-width:480px;width:100%;display:flex;background:white;border-top:1px solid #dce9f4}
+nav button{width:25%;padding:15px 2px;background:white;border:0;color:#102c50}
+</style>
+</head>
+<body>
+<div class="app">
+<header>J-<span>Jolly</span></header>
+<main id="screen"></main>
+<nav>
+<button onclick="home()">⌂<br>Esplora</button>
+<button onclick="bookings()">▦<br>Prenotazioni</button>
+<button onclick="favorites()">♡<br>Preferiti</button>
+<button onclick="profile()">♙<br>Profilo</button>
+</nav>
+</div>
+<script>
+let service="Pulizie in casa";
+let hours=3;
+let price=15;
+let worker="Giulia R.";
+let date="";
+let time="09:00";
+let booked=false;
+let started=false;
+let finished=false;
+let fav=[];
+
+const root=document.getElementById("screen");
+function show(x){root.innerHTML=x;window.scrollTo(0,0)}
+function back(){return '<button class="back" onclick="home()">← Indietro</button>'}
+function home(){
+show(`
+<h1>Di quale aiuto hai bisogno?</h1>
+<p>Trova persone disponibili vicino a te.</p>
+<div class="hero">
+<h2>🧼 Pulizie in casa</h2>
+<p>La tua casa pulita, più tempo per te.</p>
+<button class="btn" onclick="choose('Pulizie in casa')">Prenota ora →</button>
+</div>
+<h2>Altri servizi</h2>
+<div class="grid">
+<button class="tile" onclick="choose('Giardinaggio')"><b>🌿</b>Giardinaggio</button>
+<button class="tile" onclick="choose('Piccoli lavori')"><b>🛠️</b>Piccoli lavori</button>
+<button class="tile" onclick="choose('Servizi per animali')"><b>🐾</b>Animali</button>
+</div>
+<p><small>Versione dimostrativa: nessun pagamento reale.</small></p>
+`)}
+function choose(s){service=s;details()}
+function details(){
+show(back()+`
+<h1>${service}</h1>
+<p>Quando hai bisogno del servizio?</p>
+<label>Giorno</label>
+<input id="date" type="date" value="${date}">
+<label>Orario</label>
+<input id="time" type="time" value="${time}">
+<label>Numero di ore</label>
+<select id="hours">
+${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${hours===n?'selected':''}>${n} ore</option>`).join("")}
+</select>
+<button class="btn" onclick="saveDetails()">Cerca lavoratori →</button>
+`)}
+function saveDetails(){
+date=document.getElementById("date").value;
+time=document.getElementById("time").value;
+hours=Number(document.getElementById("hours").value);
+if(!date){alert("Seleziona un giorno");return}
+workers()}
+function workers(){
+let people=[["Giulia R.",15,"4,9","1,2"],["Marco T.",17,"4,8","1,8"],["Elisa M.",16,"5,0","2,3"]];
+show(back()+`<h1>Scegli il lavoratore</h1>
+<p>Persone dimostrative disponibili nella tua zona.</p>`+
+people.map(p=>`
+<div class="card">
+<h2>👤 ${p[0]}</h2>
+<p>⭐ ${p[2]} · ${p[3]} km</p>
+<div class="price">${p[1]} €/ora</div>
+<button class="btn" onclick='selectWorker(${JSON.stringify(p[0])},${p[1]})'>Seleziona</button>
+</div>`).join(""))}
+function selectWorker(n,p){worker=n;price=p;checkout()}
+function checkout(){
+let subtotal=hours*price;
+let fee=subtotal*.05;
+show(back()+`
+<h1>Conferma prenotazione</h1>
+<div class="card">
+<p><b>Servizio:</b> ${service}</p>
+<p><b>Lavoratore:</b> ${worker}</p>
+<p><b>Data:</b> ${date}</p>
+<p><b>Orario:</b> ${time}</p>
+<p><b>Durata:</b> ${hours} ore</p>
+<p>Prestazione: ${subtotal.toFixed(2)} €</p>
+<p>Commissione demo: ${fee.toFixed(2)} €</p>
+<h2>Totale: ${(subtotal+fee).toFixed(2)} €</h2>
+</div>
+<p>Pagamento dimostrativo: non inserire carte bancarie.</p>
+<button class="btn" onclick="confirm()">Conferma prenotazione di prova</button>
+`)}
+function confirm(){booked=true;started=false;finished=false;bookings()}
+function bookings(){
+if(!booked){show(`<h1>Le mie prenotazioni</h1><p>Nessuna prenotazione.</p>`);return}
+show(`
+<h1>Le mie prenotazioni</h1>
+<div class="card">
+<h2>${service}</h2>
+<p>Con ${worker}</p>
+<p>${date}, ore ${time}</p>
+<p>Durata: ${hours} ore</p>
+<p><b>Stato: ${finished?"Completato":started?"In corso":"Confermato"}</b></p>
+<button class="btn" onclick="${finished?'review()':started?'ongoing()':'start()'}">${finished?"Lascia recensione":started?"Apri servizio":"Conferma arrivo"}</button>
+</div>`)}
+function start(){started=true;ongoing()}
+function ongoing(){
+show(`<h1>Servizio in corso</h1>
+<div class="card"><h2>${worker}</h2>
+<p>Durata concordata: ${hours} ore</p>
+<button class="btn" onclick="extend()">Richiedi un'ora in più</button>
+<button class="btn" onclick="finish()">Ho finito</button>
+</div>`)}
+function extend(){
+if(confirm("Simulare l'accettazione del lavoratore?")){
+hours++;ongoing()}
+}
+function finish(){finished=true;review()}
+function review(){
+show(`<h1>Servizio completato ✓</h1>
+<p>Come è andata con ${worker}?</p>
+<select><option>⭐⭐⭐⭐⭐</option><option>⭐⭐⭐⭐</option><option>⭐⭐⭐</option></select>
+<button class="btn" onclick="alert('Grazie per la recensione!');bookings()">Invia recensione</button>
+`)}
+function favorites(){show(`<h1>I miei preferiti</h1><p>Qui potrai salvare i lavoratori che preferisci.</p>`)}
+function profile(){show(`<h1>Il mio profilo</h1><div class="card"><p>Account dimostrativo J-Jolly</p><p>Pagamenti, verifica documenti e impostazioni saranno disponibili nella versione completa.</p></div>`)}
+home();
+</script>
+</body>
+</html>
